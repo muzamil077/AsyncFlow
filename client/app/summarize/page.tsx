@@ -17,7 +17,7 @@ export default function SummarizePage() {
         if (!text) return;
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:3001/api/ai/summarize', { text });
+            const response = await axios.post('http://localhost:4000/api/ai/summarize', { text });
             setSummary(response.data.summary);
         } catch (error) {
             console.error('Error summarizing text:', error);

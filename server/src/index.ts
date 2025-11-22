@@ -1,7 +1,8 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { summarize } from './controllers/aiController';
+import { authenticate } from './middleware/auth.middleware';
 
 dotenv.config();
 
@@ -23,7 +24,7 @@ app.get('/api/health', (req, res) => {
 import authRoutes from './routes/auth.routes';
 import projectRoutes from './routes/project.routes';
 
-app.post('/api/ai/summarize', summarize);
+app.post('/api/ai/summarize', authenticate, summarize);
 app.use('/api/auth', authRoutes);
 console.log('Mounting project routes...');
 console.log('Type of projectRoutes:', typeof projectRoutes);
@@ -37,6 +38,22 @@ app.use('/api/projects', (req, res, next) => {
 
 
 app.use('/api/projects', projectRoutes);
+import taskRoutes from './routes/task.routes';
+app.use('/api/tasks', taskRoutes);
+import discussionRoutes from './routes/discussion.routes';
+app.use('/api/discussions', discussionRoutes);
+import projectMembersRoutes from './routes/project-members.routes';
+app.use('/api/members', projectMembersRoutes);
+import memberRoutes from './routes/member.routes';
+app.use('/api/team', memberRoutes);
+import assignmentRoutes from './routes/assignment.routes';
+app.use('/api/assignments', assignmentRoutes);
+
+// Global error handling middleware
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({ message: 'Internal server error' });
+});
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

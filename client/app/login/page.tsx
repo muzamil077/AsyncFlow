@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -9,6 +10,9 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const { login } = useAuth();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirect = searchParams.get('redirect');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,6 +32,12 @@ export default function LoginPage() {
             }
 
             login(data.token, data.user);
+
+            // Redirect to the invitation page or dashboard
+            if (redirect) {
+                router.push(redirect);
+            }
+            // If no redirect, the AuthContext will handle navigation to dashboard
         } catch (err: any) {
             setError(err.message);
         }
@@ -74,7 +84,10 @@ export default function LoginPage() {
                         >
                             Sign In
                         </button>
-                        <Link href="/register" className="inline-block align-baseline text-sm font-bold text-blue-500 hover:text-blue-800">
+                        <Link
+                            href={redirect ? `/register?redirect=${encodeURIComponent(redirect)}` : '/register'}
+                            className="inline-block align-baseline text-sm font-bold text-blue-500 hover:text-blue-800"
+                        >
                             Create an account
                         </Link>
                     </div>

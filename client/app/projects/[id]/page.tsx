@@ -1,18 +1,37 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useProject } from '../../context/ProjectContext';
 import { useRouter, useParams } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { Button } from '@/components/ui/button';
+import { useProject } from '@/app/context/ProjectContext';
+import { ProjectModal } from '@/components/projects/ProjectModal';
+import { Project } from '@/types/project';
+import { Edit, Trash2, LayoutGrid, List, MessageSquare, Users } from 'lucide-react';
+import { TaskList } from '@/components/tasks/TaskList';
+import { KanbanBoard } from '@/components/tasks/KanbanBoard';
+import { useTask } from '@/app/context/TaskContext';
+import { DiscussionList } from '@/components/discussions/DiscussionList';
+import { DiscussionThread } from '@/components/discussions/DiscussionThread';
+import { TaskModal } from '@/components/tasks/TaskModal';
+import { MembersPanel } from '@/components/projects/MembersPanel';
+import { useAuth } from '@/app/context/AuthContext';
 
-export default function ProjectDetailsPage() {
+export default function ProjectPage() {
     const params = useParams();
     const id = params.id as string;
-    const { currentProject, fetchProject, updateProject, deleteProject, isLoading, error } = useProject();
-    const router = useRouter();
+    const { projects, currentProject, fetchProject, deleteProject } = useProject();
+    const { tasks, fetchTasks, createTask, updateTask, deleteTask } = useTask();
+    const { user } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
-    const [editName, setEditName] = useState('');
-    const [editDescription, setEditDescription] = useState('');
+    const [viewMode, setViewMode] = useState<'list' | 'board' | 'discussions' | 'members'>('list');
+    const [selectedDiscussionId, setSelectedDiscussionId] = useState<string | null>(null);
+
+    // Task Modal State
+    const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+    const [editingTask, setEditingTask] = useState<any>(undefined);
+
+    const router = useRouter();
 
     useEffect(() => {
         if (id) {
@@ -21,17 +40,12 @@ export default function ProjectDetailsPage() {
     }, [id]);
 
     useEffect(() => {
-        if (currentProject) {
-            setEditName(currentProject.name);
-            setEditDescription(currentProject.description || '');
+        if (id) {
+            fetchTasks(id);
         }
-    }, [currentProject]);
+    }, [id]);
 
-    const handleUpdate = async (e: React.FormEvent) => {
-        e.preventDefault();
-        await updateProject(id, { name: editName, description: editDescription });
-        setIsEditing(false);
-    };
+    const project = currentProject;
 
     const handleDelete = async () => {
         if (confirm('Are you sure you want to delete this project?')) {
@@ -40,90 +54,156 @@ export default function ProjectDetailsPage() {
         }
     };
 
-    if (isLoading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
-    if (error) return <div className="text-red-500 text-center mt-10">{error}</div>;
-    if (!currentProject) return <div className="text-center mt-10">Project not found</div>;
+    if (!project) return <div>Loading...</div>;
+
+    // Task Handlers
+    const handleCreateTask = async (data: any) => {
+        await createTask(data);
+        setIsTaskModalOpen(false);
+    };
+
+    const handleUpdateTask = async (data: any) => {
+        if (editingTask) {
+            await updateTask(editingTask.id, data);
+            setIsTaskModalOpen(false);
+        }
+    };
+
+    const handleStatusChange = async (taskId: string, newStatus: any) => {
+        await updateTask(taskId, { status: newStatus });
+    };
+
+    const handleDeleteTask = async (taskId: string) => {
+        if (confirm('Are you sure you want to delete this task?')) {
+            await deleteTask(taskId);
+        }
+    };
+
+    const openCreateTaskModal = () => {
+        setEditingTask(undefined);
+        setIsTaskModalOpen(true);
+    };
+
+    const openEditTaskModal = (task: any) => {
+        setEditingTask(task);
+        setIsTaskModalOpen(true);
+    };
+
+    if (!project) return <div>Loading...</div>;
 
     return (
         <DashboardLayout>
-            <div className="container mx-auto px-4 py-8">
-                <div className="bg-white shadow-md rounded-lg p-6">
-                    {isEditing ? (
-                        <form onSubmit={handleUpdate}>
-                            <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
-                                    Project Name
-                                </label>
-                                <input
-                                    id="name"
-                                    type="text"
-                                    value={editName}
-                                    onChange={(e) => setEditName(e.target.value)}
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-6">
-                                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
-                                    Description
-                                </label>
-                                <textarea
-                                    id="description"
-                                    value={editDescription}
-                                    onChange={(e) => setEditDescription(e.target.value)}
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                    rows={5}
-                                />
-                            </div>
-                            <div className="flex justify-end space-x-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsEditing(false)}
-                                    className="text-gray-600 hover:text-gray-800 font-medium"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                                >
-                                    Save Changes
-                                </button>
-                            </div>
-                        </form>
-                    ) : (
-                        <>
-                            <div className="flex justify-between items-start mb-6">
-                                <div>
-                                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{currentProject.name}</h1>
-                                    <p className="text-gray-500 text-sm">
-                                        Created: {new Date(currentProject.createdAt).toLocaleDateString()}
-                                    </p>
-                                </div>
-                                <div className="space-x-2">
-                                    <button
-                                        onClick={() => setIsEditing(true)}
-                                        className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition-colors"
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={handleDelete}
-                                        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="prose max-w-none">
-                                <h3 className="text-xl font-semibold mb-2">Description</h3>
-                                <p className="text-gray-700 whitespace-pre-wrap">
-                                    {currentProject.description || 'No description provided.'}
-                                </p>
-                            </div>
-                        </>
+            <div className="max-w-7xl mx-auto space-y-6 p-6">
+                {/* Header Section */}
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
+                        <p className="text-gray-500 mt-1">{project.description}</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => setIsEditing(true)}>
+                            <Edit className="w-4 h-4 mr-2" /> Edit Project
+                        </Button>
+                        <Button variant="destructive" onClick={handleDelete}>
+                            <Trash2 className="w-4 h-4 mr-2" /> Delete
+                        </Button>
+                    </div>
+                </div>
+
+                {/* View Toggle */}
+                <div className="flex justify-between items-center border-b pb-2">
+                    <div className="flex space-x-2">
+                        <Button
+                            variant={viewMode === 'list' ? 'default' : 'ghost'}
+                            onClick={() => { setViewMode('list'); setSelectedDiscussionId(null); }}
+                            className="flex items-center gap-2"
+                        >
+                            <List className="w-4 h-4" /> List View
+                        </Button>
+                        <Button
+                            variant={viewMode === 'board' ? 'default' : 'ghost'}
+                            onClick={() => { setViewMode('board'); setSelectedDiscussionId(null); }}
+                            className="flex items-center gap-2"
+                        >
+                            <LayoutGrid className="w-4 h-4" /> Kanban Board
+                        </Button>
+                        <Button
+                            variant={viewMode === 'discussions' ? 'default' : 'ghost'}
+                            onClick={() => setViewMode('discussions')}
+                            className="flex items-center gap-2"
+                        >
+                            <MessageSquare className="w-4 h-4" /> Discussions
+                        </Button>
+                        <Button
+                            variant={viewMode === 'members' ? 'default' : 'ghost'}
+                            onClick={() => { setViewMode('members'); setSelectedDiscussionId(null); }}
+                            className="flex items-center gap-2"
+                        >
+                            <Users className="w-4 h-4" /> Members
+                        </Button>
+                    </div>
+                    {viewMode !== 'discussions' && viewMode !== 'members' && (
+                        <Button onClick={openCreateTaskModal}>
+                            + New Task
+                        </Button>
                     )}
                 </div>
+
+                {/* Content Area */}
+                <div className="min-h-[500px]">
+                    {viewMode === 'list' && (
+                        <TaskList
+                            tasks={tasks}
+                            onEdit={openEditTaskModal}
+                            onDelete={handleDeleteTask}
+                        />
+                    )}
+                    {viewMode === 'board' && (
+                        <KanbanBoard
+                            tasks={tasks}
+                            onStatusChange={handleStatusChange}
+                            onEdit={openEditTaskModal}
+                            onDelete={handleDeleteTask}
+                        />
+                    )}
+                    {viewMode === 'discussions' && (
+                        selectedDiscussionId ? (
+                            <DiscussionThread
+                                discussionId={selectedDiscussionId}
+                                onBack={() => setSelectedDiscussionId(null)}
+                            />
+                        ) : (
+                            <DiscussionList
+                                projectId={id}
+                                onSelectDiscussion={setSelectedDiscussionId}
+                            />
+                        )
+                    )}
+                    {viewMode === 'members' && project && user && (
+                        <MembersPanel
+                            projectId={id}
+                            isOwner={project.ownerId === user.id}
+                            isAdmin={false}
+                        />
+                    )}
+                </div>
+
+                {/* Edit Project Modal */}
+                <ProjectModal
+                    isOpen={isEditing}
+                    onClose={() => setIsEditing(false)}
+                    initialData={project}
+                    mode="edit"
+                />
+
+                {/* Task Modal */}
+                <TaskModal
+                    isOpen={isTaskModalOpen}
+                    onClose={() => setIsTaskModalOpen(false)}
+                    onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
+                    initialData={editingTask}
+                    projectId={id}
+                />
             </div>
         </DashboardLayout>
     );

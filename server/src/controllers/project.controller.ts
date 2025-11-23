@@ -41,9 +41,19 @@ export const getProjects = async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
+        // Fetch projects where user is either the owner OR a member
         const projects = await prisma.project.findMany({
             where: {
-                ownerId: userId,
+                OR: [
+                    { ownerId: userId }, // Projects owned by user
+                    {
+                        members: {
+                            some: {
+                                userId: userId // Projects where user is a member
+                            }
+                        }
+                    }
+                ]
             },
             orderBy: {
                 updatedAt: 'desc',
@@ -79,7 +89,18 @@ export const getProject = async (req: Request, res: Response) => {
             return res.status(404).json({ message: 'Project not found' });
         }
 
-        if (project.ownerId !== userId) {
+        // Check if user is owner or member
+        const isOwner = project.ownerId === userId;
+        const isMember = await prisma.projectMember.findUnique({
+            where: {
+                projectId_userId: {
+                    projectId: id,
+                    userId: userId,
+                }
+            }
+        });
+
+        if (!isOwner && !isMember) {
             return res.status(403).json({ message: 'Forbidden' });
         }
 

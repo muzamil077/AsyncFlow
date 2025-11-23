@@ -20,6 +20,12 @@ model User {
   projects      Project[]
   assignedTasks Task[]    @relation("AssignedTasks")
   createdTasks  Task[]    @relation("CreatedTasks")
+  meetings      Meeting[]
+  discussions   Discussion[]
+  discussionPosts DiscussionPost[]
+  projectMemberships ProjectMember[]
+  sentInvitations ProjectInvitation[] @relation("InvitationSender")
+  skills        UserSkill[]
 }
 
 model Project {
@@ -31,6 +37,49 @@ model Project {
   ownerId     String
   owner       User     @relation(fields: [ownerId], references: [id])
   tasks       Task[]
+  meetings    Meeting[]
+  discussions Discussion[]
+  members     ProjectMember[]
+  invitations ProjectInvitation[]
+}
+
+model ProjectMember {
+  id        String     @id @default(uuid())
+  projectId String
+  userId    String
+  role      MemberRole @default(MEMBER)
+  joinedAt  DateTime   @default(now())
+  
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, userId])
+}
+
+model ProjectInvitation {
+  id        String           @id @default(uuid())
+  projectId String
+  email     String
+  role      MemberRole       @default(MEMBER)
+  token     String           @unique
+  invitedBy String
+  status    InvitationStatus @default(PENDING)
+  expiresAt DateTime
+  createdAt DateTime         @default(now())
+  
+  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  inviter   User             @relation("InvitationSender", fields: [invitedBy], references: [id])
+}
+
+model UserSkill {
+  id     String     @id @default(uuid())
+  userId String
+  skill  String
+  level  SkillLevel
+  
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, skill])
 }
 
 model Task {
@@ -53,6 +102,50 @@ model Task {
   createdBy   User         @relation("CreatedTasks", fields: [createdById], references: [id])
 }
 
+model Meeting {
+  id               String   @id @default(uuid())
+  title            String?
+  date             DateTime @default(now())
+  transcript       String
+  summary          String
+  actionItems      Json?
+  decisions        Json?
+  discussionPoints Json?
+  projectId        String?
+  createdById      String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  project   Project? @relation(fields: [projectId], references: [id])
+  createdBy User     @relation(fields: [createdById], references: [id])
+}
+
+model Discussion {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  projectId   String
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User             @relation(fields: [createdById], references: [id])
+  posts     DiscussionPost[]
+}
+
+model DiscussionPost {
+  id           String   @id @default(uuid())
+  content      String
+  discussionId String
+  createdById  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  discussion Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  createdBy  User       @relation(fields: [createdById], references: [id])
+}
+
 enum TaskStatus {
   TODO
   IN_PROGRESS
@@ -65,4 +158,24 @@ enum TaskPriority {
   MEDIUM
   HIGH
   URGENT
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
 }

@@ -30,6 +30,10 @@ export interface Task {
         name: string | null;
         email: string;
     };
+    project?: {
+        id: string;
+        name: string;
+    };
 }
 
 export interface CreateTaskData {

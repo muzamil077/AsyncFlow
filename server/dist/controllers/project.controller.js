@@ -9,7 +9,10 @@ const createProject = async (req, res) => {
     try {
         const { name, description } = req.body;
         const userId = req.user?.userId;
+        console.log('createProject request body:', req.body);
+        console.log('createProject user:', req.user);
         if (!userId) {
+            console.log('createProject: Unauthorized - No userId');
             return res.status(401).json({ message: 'Unauthorized' });
         }
         if (!name) {
@@ -36,9 +39,19 @@ const getProjects = async (req, res) => {
         if (!userId) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
+        // Fetch projects where user is either the owner OR a member
         const projects = await prisma_1.default.project.findMany({
             where: {
-                ownerId: userId,
+                OR: [
+                    { ownerId: userId }, // Projects owned by user
+                    {
+                        members: {
+                            some: {
+                                userId: userId // Projects where user is a member
+                            }
+                        }
+                    }
+                ]
             },
             orderBy: {
                 updatedAt: 'desc',
@@ -62,10 +75,24 @@ const getProject = async (req, res) => {
         const project = await prisma_1.default.project.findUnique({
             where: { id },
         });
+        console.log(`getProject: Fetching id=${id}, found=${!!project}`);
+        if (project) {
+            console.log(`getProject: Project owner=${project.ownerId}, Request user=${userId}`);
+        }
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
-        if (project.ownerId !== userId) {
+        // Check if user is owner or member
+        const isOwner = project.ownerId === userId;
+        const isMember = await prisma_1.default.projectMember.findUnique({
+            where: {
+                projectId_userId: {
+                    projectId: id,
+                    userId: userId,
+                }
+            }
+        });
+        if (!isOwner && !isMember) {
             return res.status(403).json({ message: 'Forbidden' });
         }
         res.json(project);

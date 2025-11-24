@@ -48,6 +48,14 @@ import memberRoutes from './routes/member.routes';
 app.use('/api/team', memberRoutes);
 import assignmentRoutes from './routes/assignment.routes';
 app.use('/api/assignments', assignmentRoutes);
+import skillsRoutes from './routes/skills.routes';
+app.use('/api/skills', skillsRoutes);
+import meetingRoutes from './routes/meeting.routes';
+app.use('/api/meetings', meetingRoutes);
+import integrationRoutes from './routes/integration.routes';
+app.use('/api/integrations', integrationRoutes);
+import wikiRoutes from './routes/wiki.routes';
+app.use('/api/wiki', wikiRoutes);
 
 // Global error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

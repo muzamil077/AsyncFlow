@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Users, UserPlus, Trash2, Crown, Shield, User as UserIcon } from 'lucide-react';
+import { Users, UserPlus, Trash2, Crown, Shield, User as UserIcon, Eye, XCircle } from 'lucide-react';
 import { ProjectMember, MemberRole, ProjectInvitation } from '@/types/member';
 import { InviteMemberModal } from './InviteMemberModal';
 
@@ -101,6 +101,28 @@ export const MembersPanel: React.FC<MembersPanelProps> = ({ projectId, isOwner, 
         }
     };
 
+    const handleRevokeInvitation = async (invitationId: string) => {
+        if (!confirm('Are you sure you want to revoke this invitation?')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`http://localhost:4000/api/team/invitations/${invitationId}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (response.ok) {
+                fetchInvitations();
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Failed to revoke invitation');
+            }
+        } catch (error) {
+            alert('Failed to revoke invitation');
+        }
+    };
+
     const getRoleIcon = (role: MemberRole) => {
         switch (role) {
             case MemberRole.OWNER:
@@ -109,6 +131,8 @@ export const MembersPanel: React.FC<MembersPanelProps> = ({ projectId, isOwner, 
                 return <Shield className="w-4 h-4 text-blue-500" />;
             case MemberRole.MEMBER:
                 return <UserIcon className="w-4 h-4 text-gray-500" />;
+            case MemberRole.VIEWER:
+                return <Eye className="w-4 h-4 text-green-500" />;
         }
     };
 
@@ -120,6 +144,8 @@ export const MembersPanel: React.FC<MembersPanelProps> = ({ projectId, isOwner, 
                 return 'bg-blue-100 text-blue-800';
             case MemberRole.MEMBER:
                 return 'bg-gray-100 text-gray-800';
+            case MemberRole.VIEWER:
+                return 'bg-green-100 text-green-800';
         }
     };
 
@@ -181,6 +207,7 @@ export const MembersPanel: React.FC<MembersPanelProps> = ({ projectId, isOwner, 
                                     onChange={(e) => handleUpdateRole(member.id, e.target.value as MemberRole)}
                                     className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 >
+                                    <option value={MemberRole.VIEWER}>Viewer</option>
                                     <option value={MemberRole.MEMBER}>Member</option>
                                     <option value={MemberRole.ADMIN}>Admin</option>
                                 </select>
@@ -221,8 +248,18 @@ export const MembersPanel: React.FC<MembersPanelProps> = ({ projectId, isOwner, 
                                         Expires {new Date(invitation.expiresAt).toLocaleDateString()}
                                     </p>
                                 </div>
-                                <div className={`px-3 py-1 rounded-full ${getRoleBadgeColor(invitation.role)}`}>
-                                    <span className="text-sm font-medium capitalize">{invitation.role.toLowerCase()}</span>
+                                <div className="flex items-center gap-2">
+                                    <div className={`px-3 py-1 rounded-full ${getRoleBadgeColor(invitation.role)}`}>
+                                        <span className="text-sm font-medium capitalize">{invitation.role.toLowerCase()}</span>
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleRevokeInvitation(invitation.id)}
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    >
+                                        <XCircle className="w-4 h-4" />
+                                    </Button>
                                 </div>
                             </div>
                         ))}

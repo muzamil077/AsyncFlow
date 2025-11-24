@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getInvitations = exports.removeMember = exports.updateMemberRole = exports.getMembers = exports.acceptInvitation = exports.inviteMember = void 0;
+exports.revokeInvitation = exports.getInvitations = exports.removeMember = exports.updateMemberRole = exports.getMembers = exports.acceptInvitation = exports.inviteMember = void 0;
 const prisma_1 = __importDefault(require("../lib/prisma"));
 const crypto_1 = __importDefault(require("crypto"));
 // Invite a member to a project
@@ -380,3 +380,37 @@ const getInvitations = async (req, res) => {
     }
 };
 exports.getInvitations = getInvitations;
+// Revoke invitation
+const revokeInvitation = async (req, res) => {
+    try {
+        const { invitationId } = req.params;
+        const userId = req.user?.userId;
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        const invitation = await prisma_1.default.projectInvitation.findUnique({
+            where: { id: invitationId },
+            include: { project: true },
+        });
+        if (!invitation) {
+            return res.status(404).json({ message: 'Invitation not found' });
+        }
+        // Only owner can revoke invitations
+        if (invitation.project.ownerId !== userId) {
+            return res.status(403).json({ message: 'Only project owner can revoke invitations' });
+        }
+        if (invitation.status !== 'PENDING') {
+            return res.status(400).json({ message: 'Only pending invitations can be revoked' });
+        }
+        await prisma_1.default.projectInvitation.update({
+            where: { id: invitationId },
+            data: { status: 'REVOKED' },
+        });
+        res.status(204).send();
+    }
+    catch (error) {
+        console.error('Revoke invitation error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+exports.revokeInvitation = revokeInvitation;

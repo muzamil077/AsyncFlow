@@ -8,6 +8,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+
 }
 
 model User {
@@ -41,6 +42,7 @@ model Project {
   discussions Discussion[]
   members     ProjectMember[]
   invitations ProjectInvitation[]
+  wikiPages   WikiPage[]
 }
 
 model ProjectMember {
@@ -106,6 +108,8 @@ model Meeting {
   id               String   @id @default(uuid())
   title            String?
   date             DateTime @default(now())
+  provider         String?   // e.g., 'zoom', 'google', 'teams'
+  externalId       String?   // ID from the external provider
   transcript       String
   summary          String
   actionItems      Json?
@@ -119,6 +123,17 @@ model Meeting {
   project   Project? @relation(fields: [projectId], references: [id])
   createdBy User     @relation(fields: [createdById], references: [id])
 }
+
+model WikiPage {
+  id          String   @id @default(uuid())
+  title       String
+  content     String   // Markdown content
+  generatedAt DateTime @default(now())
+  projectId   String
+
+  project Project @relation(fields: [projectId], references: [id])
+}
+
 
 model Discussion {
   id          String   @id @default(uuid())
@@ -164,6 +179,7 @@ enum MemberRole {
   OWNER
   ADMIN
   MEMBER
+  VIEWER
 }
 
 enum InvitationStatus {

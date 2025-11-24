@@ -122,11 +122,12 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                                 className="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
                                 disabled={loading}
                             >
+                                <option value={MemberRole.VIEWER}>Viewer (Read-only)</option>
                                 <option value={MemberRole.MEMBER}>Member</option>
                                 <option value={MemberRole.ADMIN}>Admin</option>
                             </select>
                             <p className="text-xs text-gray-500">
-                                Members can view and edit tasks. Admins can also invite and manage members.
+                                Viewers can view project content. Members can edit tasks. Admins can also invite and manage members.
                             </p>
                         </div>
 

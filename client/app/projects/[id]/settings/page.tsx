@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -18,8 +18,8 @@ interface Member {
     };
 }
 
-export default function ProjectSettingsPage({ params }: { params: { id: string } }) {
-    const { id } = params;
+export default function ProjectSettingsPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const router = useRouter();
     const [members, setMembers] = useState<Member[]>([]);
     const [loading, setLoading] = useState(true);
@@ -140,8 +140,8 @@ export default function ProjectSettingsPage({ params }: { params: { id: string }
                                 </div>
                                 <div className="flex items-center space-x-4">
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${member.role === 'OWNER' ? 'bg-purple-100 text-purple-800' :
-                                            member.role === 'ADMIN' ? 'bg-blue-100 text-blue-800' :
-                                                'bg-gray-100 text-gray-800'
+                                        member.role === 'ADMIN' ? 'bg-blue-100 text-blue-800' :
+                                            'bg-gray-100 text-gray-800'
                                         }`}>
                                         {member.role}
                                     </span>
@@ -156,6 +156,59 @@ export default function ProjectSettingsPage({ params }: { params: { id: string }
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </div>
+
+                {/* Integration Settings */}
+                <div className="bg-white rounded-lg shadow mt-6">
+                    <div className="p-6 border-b">
+                        <h2 className="text-xl font-semibold">Integrations</h2>
+                    </div>
+                    <div className="p-6 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <span className="text-blue-600 font-bold">Z</span>
+                                </div>
+                                <div>
+                                    <h3 className="font-medium">Zoom</h3>
+                                    <p className="text-sm text-gray-500">Sync meetings and transcripts</p>
+                                </div>
+                            </div>
+                            <Button variant="outline" onClick={() => window.location.href = 'http://localhost:4000/api/integrations/oauth/zoom'}>
+                                Connect
+                            </Button>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                    <span className="text-green-600 font-bold">G</span>
+                                </div>
+                                <div>
+                                    <h3 className="font-medium">Google Meet</h3>
+                                    <p className="text-sm text-gray-500">Import calendar events</p>
+                                </div>
+                            </div>
+                            <Button variant="outline" onClick={() => window.location.href = 'http://localhost:4000/api/integrations/oauth/google'}>
+                                Connect
+                            </Button>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <span className="text-purple-600 font-bold">T</span>
+                                </div>
+                                <div>
+                                    <h3 className="font-medium">Microsoft Teams</h3>
+                                    <p className="text-sm text-gray-500">Sync calls and chats</p>
+                                </div>
+                            </div>
+                            <Button variant="outline" onClick={() => window.location.href = 'http://localhost:4000/api/integrations/oauth/microsoft'}>
+                                Connect
+                            </Button>
+                        </div>
                     </div>
                 </div>
 

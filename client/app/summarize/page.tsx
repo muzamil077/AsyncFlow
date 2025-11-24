@@ -26,6 +26,8 @@ export default function SummarizePage() {
     const [loading, setLoading] = useState(false);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [selectedActionItem, setSelectedActionItem] = useState('');
+    const [showBulkPreview, setShowBulkPreview] = useState(false);
+    const [creatingBulkTasks, setCreatingBulkTasks] = useState(false);
 
     // We need a project context to create tasks. 
     // For now, we'll try to use the first available project or ask user to select one.
@@ -82,6 +84,47 @@ export default function SummarizePage() {
     const handleTaskSubmit = async (data: CreateTaskData | UpdateTaskData) => {
         await createTask(data as CreateTaskData);
         setIsTaskModalOpen(false);
+    };
+
+    const handleCreateAllTasks = async () => {
+        if (!insights?.actionItems || insights.actionItems.length === 0) {
+            alert('No action items to create tasks from');
+            return;
+        }
+
+        if (!selectedProjectId && projects.length === 0) {
+            alert('Please select a project first');
+            return;
+        }
+
+        setCreatingBulkTasks(true);
+        try {
+            const projectId = selectedProjectId || projects[0].id;
+            const token = localStorage.getItem('token');
+
+            // Create all tasks from action items
+            const taskPromises = insights.actionItems.map(async (actionItem) => {
+                return await axios.post('http://localhost:4000/api/tasks', {
+                    title: actionItem,
+                    description: `Auto-generated from meeting summary`,
+                    projectId,
+                    status: 'TODO',
+                    priority: 'MEDIUM',
+                    aiGenerated: true
+                }, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+            });
+
+            await Promise.all(taskPromises);
+            alert(`Successfully created ${insights.actionItems.length} tasks!`);
+            setShowBulkPreview(false);
+        } catch (error) {
+            console.error('Error creating bulk tasks:', error);
+            alert('Failed to create some tasks. Please try again.');
+        } finally {
+            setCreatingBulkTasks(false);
+        }
     };
 
     return (
@@ -160,10 +203,21 @@ export default function SummarizePage() {
                         {/* Action Items */}
                         <Card>
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-blue-600">
-                                    <CheckSquare className="w-5 h-5" />
-                                    Action Items
-                                </CardTitle>
+                                <div className="flex justify-between items-center">
+                                    <CardTitle className="flex items-center gap-2 text-blue-600">
+                                        <CheckSquare className="w-5 h-5" />
+                                        Action Items
+                                    </CardTitle>
+                                    {insights?.actionItems?.length > 0 && selectedProjectId && (
+                                        <Button
+                                            size="sm"
+                                            onClick={() => setShowBulkPreview(true)}
+                                            className="bg-blue-600 hover:bg-blue-700"
+                                        >
+                                            Create All Tasks ({insights.actionItems.length})
+                                        </Button>
+                                    )}
+                                </div>
                             </CardHeader>
                             <CardContent>
                                 {insights?.actionItems?.length ? (
@@ -227,6 +281,69 @@ export default function SummarizePage() {
                     projectId={selectedProjectId || projects[0].id}
                     defaultTitle={selectedActionItem}
                 />
+            )}
+
+            {/* Bulk Task Creation Preview Modal */}
+            {showBulkPreview && insights?.actionItems && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-[80vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-semibold text-gray-900">
+                                Create {insights.actionItems.length} Tasks
+                            </h2>
+                            <button
+                                onClick={() => setShowBulkPreview(false)}
+                                className="text-gray-400 hover:text-gray-600"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="mb-4">
+                            <p className="text-gray-600 text-sm">
+                                The following tasks will be created in <strong>{projects.find(p => p.id === selectedProjectId)?.name || projects[0]?.name}</strong>:
+                            </p>
+                        </div>
+
+                        <div className="space-y-2 mb-6">
+                            {insights.actionItems.map((item, index) => (
+                                <div key={index} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                                    <CheckSquare className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1">
+                                        <p className="text-gray-800 text-sm">{item}</p>
+                                        <p className="text-xs text-gray-500 mt-1">Status: TODO • Priority: MEDIUM</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex justify-end gap-3">
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowBulkPreview(false)}
+                                disabled={creatingBulkTasks}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleCreateAllTasks}
+                                disabled={creatingBulkTasks}
+                                className="bg-blue-600 hover:bg-blue-700"
+                            >
+                                {creatingBulkTasks ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    `Create ${insights.actionItems?.length || 0} Tasks`
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
             )}
         </DashboardLayout>
     );

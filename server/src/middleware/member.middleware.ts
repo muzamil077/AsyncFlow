@@ -25,7 +25,7 @@ export const requireProjectMember = async (req: Request, res: Response, next: Ne
 
         // Check if user is owner
         if (project.ownerId === userId) {
-            req.user = { ...req.user, role: 'OWNER' };
+            req.user = { userId, role: 'OWNER' };
             return next();
         }
 
@@ -43,7 +43,7 @@ export const requireProjectMember = async (req: Request, res: Response, next: Ne
             return res.status(403).json({ message: 'Access denied: You are not a member of this project' });
         }
 
-        req.user = { ...req.user, role: member.role };
+        req.user = { userId, role: member.role };
         next();
     } catch (error) {
         console.error('Project member check error:', error);
@@ -75,7 +75,7 @@ export const requireProjectAdmin = async (req: Request, res: Response, next: Nex
 
         // Check if user is owner
         if (project.ownerId === userId) {
-            req.user = { ...req.user, role: 'OWNER' };
+            req.user = { userId, role: 'OWNER' };
             return next();
         }
 
@@ -93,7 +93,7 @@ export const requireProjectAdmin = async (req: Request, res: Response, next: Nex
             return res.status(403).json({ message: 'Access denied: Admin privileges required' });
         }
 
-        req.user = { ...req.user, role: member.role };
+        req.user = { userId, role: member.role };
         next();
     } catch (error) {
         console.error('Project admin check error:', error);

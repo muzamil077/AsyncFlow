@@ -6,6 +6,8 @@ import { TaskCard } from '@/components/tasks/TaskCard';
 import { TaskModal } from '@/components/tasks/TaskModal';
 import { useTask } from '@/app/context/TaskContext';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, TrendingUp, Calendar } from 'lucide-react';
 import { Task, TaskStatus, TaskPriority } from '@/types/task';
 
 export default function MyTasksPage() {
@@ -14,6 +16,7 @@ export default function MyTasksPage() {
     const [loading, setLoading] = useState(true);
     const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isViewOnly, setIsViewOnly] = useState(false);
     const [filter, setFilter] = useState<'all' | TaskStatus>('all');
 
     useEffect(() => {
@@ -39,6 +42,14 @@ export default function MyTasksPage() {
 
     const handleEdit = (task: Task) => {
         setEditingTask(task);
+        setIsViewOnly(false);
+        setIsModalOpen(true);
+    };
+
+    const handleView = (task: Task) => {
+        console.log('handleView called for task:', task.id);
+        setEditingTask(task);
+        setIsViewOnly(true);
         setIsModalOpen(true);
     };
 
@@ -57,15 +68,11 @@ export default function MyTasksPage() {
         }
     };
 
-    const filteredTasks = filter === 'all'
-        ? myTasks
-        : myTasks.filter(task => task.status === filter);
+    const filteredTasks = filter === 'all' ? myTasks : myTasks.filter((t) => t.status === filter);
 
     const tasksByProject = filteredTasks.reduce((acc, task) => {
         const projectName = task.project?.name || 'Unknown Project';
-        if (!acc[projectName]) {
-            acc[projectName] = [];
-        }
+        if (!acc[projectName]) acc[projectName] = [];
         acc[projectName].push(task);
         return acc;
     }, {} as Record<string, Task[]>);
@@ -88,37 +95,103 @@ export default function MyTasksPage() {
                     <p className="text-gray-600">Tasks assigned to you across all projects</p>
                 </div>
 
+                {/* Workload Summary */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-gray-600">Total Active</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-gray-900">
+                                {myTasks.filter((t) => t.status !== TaskStatus.DONE).length}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">tasks in progress</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                                <AlertCircle className="w-4 h-4" /> High Priority
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-red-600">
+                                {myTasks.filter((t) => t.priority === TaskPriority.HIGH && t.status !== TaskStatus.DONE).length}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">urgent tasks</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                                <Calendar className="w-4 h-4" /> Due Soon
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-yellow-600">
+                                {myTasks.filter((t) => {
+                                    if (!t.dueDate || t.status === TaskStatus.DONE) return false;
+                                    const dueDate = new Date(t.dueDate);
+                                    const today = new Date();
+                                    const diffDays = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                                    return diffDays >= 0 && diffDays <= 7;
+                                }).length}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">within 7 days</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                                <TrendingUp className="w-4 h-4" /> Capacity
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {(() => {
+                                const activeCount = myTasks.filter((t) => t.status !== TaskStatus.DONE).length;
+                                const status =
+                                    activeCount === 0
+                                        ? 'Available'
+                                        : activeCount <= 3
+                                            ? 'Light'
+                                            : activeCount <= 5
+                                                ? 'Moderate'
+                                                : 'Heavy';
+                                const color =
+                                    activeCount === 0
+                                        ? 'text-gray-600'
+                                        : activeCount <= 3
+                                            ? 'text-green-600'
+                                            : activeCount <= 5
+                                                ? 'text-yellow-600'
+                                                : 'text-red-600';
+                                return (
+                                    <>
+                                        <p className={`text-2xl font-bold ${color}`}>{status}</p>
+                                        <p className="text-xs text-gray-500 mt-1">workload status</p>
+                                    </>
+                                );
+                            })()}
+                        </CardContent>
+                    </Card>
+                </div>
+
                 {/* Filter Buttons */}
                 <div className="flex gap-2 mb-6 flex-wrap">
-                    <Button
-                        variant={filter === 'all' ? 'default' : 'outline'}
-                        onClick={() => setFilter('all')}
-                    >
+                    <Button variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')}>
                         All ({myTasks.length})
                     </Button>
-                    <Button
-                        variant={filter === TaskStatus.TODO ? 'default' : 'outline'}
-                        onClick={() => setFilter(TaskStatus.TODO)}
-                    >
-                        To Do ({myTasks.filter(t => t.status === TaskStatus.TODO).length})
+                    <Button variant={filter === TaskStatus.TODO ? 'default' : 'outline'} onClick={() => setFilter(TaskStatus.TODO)}>
+                        To Do ({myTasks.filter((t) => t.status === TaskStatus.TODO).length})
                     </Button>
-                    <Button
-                        variant={filter === TaskStatus.IN_PROGRESS ? 'default' : 'outline'}
-                        onClick={() => setFilter(TaskStatus.IN_PROGRESS)}
-                    >
-                        In Progress ({myTasks.filter(t => t.status === TaskStatus.IN_PROGRESS).length})
+                    <Button variant={filter === TaskStatus.IN_PROGRESS ? 'default' : 'outline'} onClick={() => setFilter(TaskStatus.IN_PROGRESS)}>
+                        In Progress ({myTasks.filter((t) => t.status === TaskStatus.IN_PROGRESS).length})
                     </Button>
-                    <Button
-                        variant={filter === TaskStatus.IN_REVIEW ? 'default' : 'outline'}
-                        onClick={() => setFilter(TaskStatus.IN_REVIEW)}
-                    >
-                        In Review ({myTasks.filter(t => t.status === TaskStatus.IN_REVIEW).length})
+                    <Button variant={filter === TaskStatus.IN_REVIEW ? 'default' : 'outline'} onClick={() => setFilter(TaskStatus.IN_REVIEW)}>
+                        In Review ({myTasks.filter((t) => t.status === TaskStatus.IN_REVIEW).length})
                     </Button>
-                    <Button
-                        variant={filter === TaskStatus.DONE ? 'default' : 'outline'}
-                        onClick={() => setFilter(TaskStatus.DONE)}
-                    >
-                        Done ({myTasks.filter(t => t.status === TaskStatus.DONE).length})
+                    <Button variant={filter === TaskStatus.DONE ? 'default' : 'outline'} onClick={() => setFilter(TaskStatus.DONE)}>
+                        Done ({myTasks.filter((t) => t.status === TaskStatus.DONE).length})
                     </Button>
                 </div>
 
@@ -133,16 +206,16 @@ export default function MyTasksPage() {
                         {Object.entries(tasksByProject).map(([projectName, tasks]) => (
                             <div key={projectName}>
                                 <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                                    <span className="w-1 h-6 bg-indigo-500 mr-3 rounded"></span>
+                                    <span className="w-1 h-6 bg-indigo-500 mr-3 rounded" />
                                     {projectName}
-                                    <span className="ml-2 text-sm text-gray-500 font-normal">({tasks.length})</span>
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {tasks.map(task => (
+                                    {tasks.map((task) => (
                                         <TaskCard
                                             key={task.id}
                                             task={task}
                                             onEdit={handleEdit}
+                                            onView={handleView}
                                             onDelete={handleDelete}
                                         />
                                     ))}
@@ -152,14 +225,15 @@ export default function MyTasksPage() {
                     </div>
                 )}
 
-                {/* Edit Task Modal */}
+                {/* Edit/View Task Modal */}
                 {editingTask && (
                     <TaskModal
                         isOpen={isModalOpen}
                         onClose={() => setIsModalOpen(false)}
                         onSubmit={handleUpdate}
                         initialData={editingTask}
-                        projectId={editingTask.projectId}
+                        projectId={editingTask?.projectId ?? ''}
+                        viewOnly={isViewOnly}
                     />
                 )}
             </div>

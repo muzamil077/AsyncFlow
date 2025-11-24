@@ -6,30 +6,42 @@ interface TaskCardProps {
     task: Task;
     onEdit: (task: Task) => void;
     onDelete: (taskId: string) => void;
+    onView?: (task: Task) => void;
 }
 
-const priorityColors = {
+const priorityColors: Record<TaskPriority, string> = {
     [TaskPriority.LOW]: 'bg-blue-100 text-blue-800',
     [TaskPriority.MEDIUM]: 'bg-yellow-100 text-yellow-800',
     [TaskPriority.HIGH]: 'bg-orange-100 text-orange-800',
     [TaskPriority.URGENT]: 'bg-red-100 text-red-800',
 };
 
-const statusColors = {
+const statusColors: Record<TaskStatus, string> = {
     [TaskStatus.TODO]: 'bg-gray-100 text-gray-800',
     [TaskStatus.IN_PROGRESS]: 'bg-blue-100 text-blue-800',
     [TaskStatus.IN_REVIEW]: 'bg-purple-100 text-purple-800',
     [TaskStatus.DONE]: 'bg-green-100 text-green-800',
 };
 
-export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) => {
+export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete, onView }) => {
     return (
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+        <div
+            onClick={() => {
+                console.log('TaskCard clicked:', task.id);
+                onView?.(task);
+            }}
+            className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group"
+        >
             <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold text-gray-900">{task.title}</h3>
+                <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    {task.title}
+                </h3>
                 <div className="flex space-x-2">
                     <button
-                        onClick={() => onEdit(task)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(task);
+                        }}
                         className="text-gray-400 hover:text-blue-600 transition-colors"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -37,7 +49,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) =>
                         </svg>
                     </button>
                     <button
-                        onClick={() => onDelete(task.id)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(task.id);
+                        }}
                         className="text-gray-400 hover:text-red-600 transition-colors"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -46,18 +61,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete }) =>
                     </button>
                 </div>
             </div>
-
             <p className="text-sm text-gray-600 mb-3 line-clamp-2">{task.description}</p>
-
             <div className="flex flex-wrap gap-2 mb-3">
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${priorityColors[task.priority]}`}>
-                    {task.priority}
-                </span>
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColors[task.status]}`}>
-                    {task.status.replace('_', ' ')}
-                </span>
+                <span className={`text-xs px-2 py-1 rounded-full font-medium ${priorityColors[task.priority]}`}>{task.priority}</span>
+                <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColors[task.status]}`}>{task.status.replace('_', ' ')}</span>
             </div>
-
             <div className="flex justify-between items-center text-xs text-gray-500 mt-2 pt-2 border-t border-gray-100">
                 <div className="flex items-center">
                     {task.assignee ? (

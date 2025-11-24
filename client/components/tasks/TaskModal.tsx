@@ -12,6 +12,7 @@ interface TaskModalProps {
     initialData?: Task;
     projectId: string;
     defaultTitle?: string;
+    viewOnly?: boolean;
 }
 
 interface ProjectMember {
@@ -29,7 +30,15 @@ interface AssigneeSuggestion {
     currentWorkload: number;
 }
 
-export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit, initialData, projectId, defaultTitle }) => {
+export const TaskModal: React.FC<TaskModalProps> = ({
+    isOpen,
+    onClose,
+    onSubmit,
+    initialData,
+    projectId,
+    defaultTitle,
+    viewOnly = false,
+}) => {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState<TaskStatus>(TaskStatus.TODO);
@@ -42,6 +51,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
     const [loadingSuggestions, setLoadingSuggestions] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    // Populate fields when editing or creating
     useEffect(() => {
         if (initialData) {
             setTitle(initialData.title);
@@ -60,6 +70,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
         }
     }, [initialData, isOpen, defaultTitle]);
 
+    // Load project members when modal opens
     useEffect(() => {
         if (isOpen && projectId) {
             fetchProjectMembers();
@@ -86,7 +97,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
             alert('Please enter a task title first');
             return;
         }
-
         setLoadingSuggestions(true);
         try {
             const token = localStorage.getItem('token');
@@ -98,7 +108,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
                 },
                 body: JSON.stringify({ projectId, title, description }),
             });
-
             if (response.ok) {
                 const data = await response.json();
                 setSuggestions(data);
@@ -140,7 +149,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
             <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold text-gray-900">
-                        {initialData ? 'Edit Task' : 'Create New Task'}
+                        {viewOnly ? 'View Task' : initialData ? 'Edit Task' : 'Create New Task'}
                     </h2>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,7 +157,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
                         </svg>
                     </button>
                 </div>
-
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <Label htmlFor="title">Title</Label>
@@ -158,9 +166,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="Task title"
                             required
+                            disabled={viewOnly}
                         />
                     </div>
-
                     <div>
                         <Label htmlFor="description">Description</Label>
                         <Textarea
@@ -169,9 +177,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Task description"
                             rows={3}
+                            disabled={viewOnly}
                         />
                     </div>
-
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="status">Status</Label>
@@ -180,13 +188,15 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
                                 value={status}
                                 onChange={(e) => setStatus(e.target.value as TaskStatus)}
                                 className="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                                disabled={viewOnly}
                             >
                                 {Object.values(TaskStatus).map((s) => (
-                                    <option key={s} value={s}>{s.replace('_', ' ')}</option>
+                                    <option key={s} value={s}>
+                                        {s.replace('_', ' ')}
+                                    </option>
                                 ))}
                             </select>
                         </div>
-
                         <div>
                             <Label htmlFor="priority">Priority</Label>
                             <select
@@ -194,31 +204,36 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
                                 value={priority}
                                 onChange={(e) => setPriority(e.target.value as TaskPriority)}
                                 className="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                                disabled={viewOnly}
                             >
                                 {Object.values(TaskPriority).map((p) => (
-                                    <option key={p} value={p}>{p}</option>
+                                    <option key={p} value={p}>
+                                        {p}
+                                    </option>
                                 ))}
                             </select>
                         </div>
                     </div>
-
                     <div>
                         <div className="flex justify-between items-center mb-1">
                             <Label htmlFor="assignee">Assignee</Label>
-                            <button
-                                type="button"
-                                onClick={fetchAISuggestions}
-                                disabled={loadingSuggestions}
-                                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
-                            >
-                                {loadingSuggestions ? '🤖 Loading...' : '🤖 AI Suggestions'}
-                            </button>
+                            {!viewOnly && (
+                                <button
+                                    type="button"
+                                    onClick={fetchAISuggestions}
+                                    disabled={loadingSuggestions}
+                                    className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                                >
+                                    {loadingSuggestions ? '🤖 Loading...' : '🤖 AI Suggestions'}
+                                </button>
+                            )}
                         </div>
                         <select
                             id="assignee"
                             value={assigneeId}
                             onChange={(e) => setAssigneeId(e.target.value)}
                             className="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                            disabled={viewOnly}
                         >
                             <option value="">Unassigned</option>
                             {members.map((member) => (
@@ -227,8 +242,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
                                 </option>
                             ))}
                         </select>
-
-                        {/* AI Suggestions Panel */}
                         {showSuggestions && suggestions.length > 0 && (
                             <div className="mt-2 p-3 bg-indigo-50 rounded-md border border-indigo-200">
                                 <p className="text-sm font-medium text-indigo-900 mb-2">AI Recommendations:</p>
@@ -246,17 +259,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
                                                 <p className="text-sm font-medium text-gray-900">
                                                     {suggestion.userName || suggestion.email}
                                                 </p>
-                                                <p className="text-xs text-gray-600">
-                                                    {suggestion.reasons.join(', ')}
-                                                </p>
+                                                <p className="text-xs text-gray-600">{suggestion.reasons.join(', ')}</p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-sm font-bold text-indigo-600">
-                                                    {suggestion.score}%
-                                                </p>
-                                                <p className="text-xs text-gray-500">
-                                                    {suggestion.currentWorkload} tasks
-                                                </p>
+                                                <p className="text-sm font-bold text-indigo-600">{suggestion.score}%</p>
+                                                <p className="text-xs text-gray-500">{suggestion.currentWorkload} tasks</p>
                                             </div>
                                         </div>
                                     ))}
@@ -264,7 +271,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
                             </div>
                         )}
                     </div>
-
                     <div>
                         <Label htmlFor="dueDate">Due Date</Label>
                         <Input
@@ -272,19 +278,21 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
                             type="date"
                             value={dueDate}
                             onChange={(e) => setDueDate(e.target.value)}
+                            disabled={viewOnly}
                         />
                     </div>
-
                     <div className="flex justify-end space-x-3 pt-4">
                         <Button type="button" variant="outline" onClick={onClose}>
-                            Cancel
+                            Close
                         </Button>
-                        <Button type="submit" disabled={loading}>
-                            {loading ? 'Saving...' : (initialData ? 'Update Task' : 'Create Task')}
-                        </Button>
+                        {!viewOnly && (
+                            <Button type="submit" disabled={loading}>
+                                {loading ? 'Saving...' : initialData ? 'Update Task' : 'Create Task'}
+                            </Button>
+                        )}
                     </div>
                 </form>
             </div>
         </div>
-    )
+    );
 };

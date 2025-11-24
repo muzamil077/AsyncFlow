@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useProject } from '@/app/context/ProjectContext';
 import { ProjectModal } from '@/components/projects/ProjectModal';
 import { Project } from '@/types/project';
-import { Edit, Trash2, LayoutGrid, List, MessageSquare, Users } from 'lucide-react';
+import { Edit, Trash2, LayoutGrid, List, MessageSquare, Users, Video, BookOpen, Settings } from 'lucide-react';
 import { TaskList } from '@/components/tasks/TaskList';
 import { KanbanBoard } from '@/components/tasks/KanbanBoard';
 import { useTask } from '@/app/context/TaskContext';
@@ -101,6 +101,9 @@ export default function ProjectPage() {
                         <p className="text-gray-500 mt-1">{project.description}</p>
                     </div>
                     <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => router.push(`/projects/${id}/settings`)}>
+                            <Settings className="w-4 h-4 mr-2" /> Settings
+                        </Button>
                         <Button variant="outline" onClick={() => setIsEditing(true)}>
                             <Edit className="w-4 h-4 mr-2" /> Edit Project
                         </Button>
@@ -140,6 +143,20 @@ export default function ProjectPage() {
                             className="flex items-center gap-2"
                         >
                             <Users className="w-4 h-4" /> Members
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={() => router.push(`/projects/${id}/meetings`)}
+                            className="flex items-center gap-2"
+                        >
+                            <Video className="w-4 h-4" /> Meetings
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={() => router.push(`/projects/${id}/wiki`)}
+                            className="flex items-center gap-2"
+                        >
+                            <BookOpen className="w-4 h-4" /> Wiki
                         </Button>
                     </div>
                     {viewMode !== 'discussions' && viewMode !== 'members' && (

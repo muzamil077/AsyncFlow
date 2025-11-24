@@ -428,3 +428,43 @@ export const getInvitations = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+// Revoke invitation
+export const revokeInvitation = async (req: Request, res: Response) => {
+    try {
+        const { invitationId } = req.params;
+        const userId = req.user?.userId;
+
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        const invitation = await prisma.projectInvitation.findUnique({
+            where: { id: invitationId },
+            include: { project: true },
+        });
+
+        if (!invitation) {
+            return res.status(404).json({ message: 'Invitation not found' });
+        }
+
+        // Only owner can revoke invitations
+        if (invitation.project.ownerId !== userId) {
+            return res.status(403).json({ message: 'Only project owner can revoke invitations' });
+        }
+
+        if (invitation.status !== 'PENDING') {
+            return res.status(400).json({ message: 'Only pending invitations can be revoked' });
+        }
+
+        await prisma.projectInvitation.update({
+            where: { id: invitationId },
+            data: { status: 'REVOKED' },
+        });
+
+        res.status(204).send();
+    } catch (error) {
+        console.error('Revoke invitation error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};

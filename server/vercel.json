@@ -1,5 +1,31 @@
 {
     "version": 2,
-    "builds": [],
-    "routes": []
+    "builds": [
+        {
+            "src": "client/package.json",
+            "use": "@vercel/next"
+        },
+        {
+            "src": "server/src/index.ts",
+            "use": "@vercel/node",
+            "config": {
+                "includeFiles": [
+                    "server/prisma/**"
+                ]
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "server/src/index.ts"
+        },
+        {
+            "handle": "filesystem"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "client/$1"
+        }
+    ]
 }

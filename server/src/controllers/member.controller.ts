@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import crypto from 'crypto';
+import { sendInvitationEmail } from '../services/email.service';
 
 // Invite a member to a project
 export const inviteMember = async (req: Request, res: Response) => {
@@ -103,17 +104,33 @@ export const inviteMember = async (req: Request, res: Response) => {
             },
         });
 
-        // TODO: Send email with invitation link
-        // For now, return the token in response (in production, this would be sent via email)
+        // Send invitation email
+        const invitationLink = `${process.env.CLIENT_URL || 'http://localhost:3000'}/invite/${token}`;
+
+        try {
+            await sendInvitationEmail({
+                to: email,
+                projectName: invitation.project.name,
+                inviterName: invitation.inviter.name || invitation.inviter.email,
+                invitationLink,
+                expiresAt,
+            });
+            console.log(`Invitation email sent to ${email}`);
+        } catch (emailError) {
+            // Log error but don't fail the invitation creation
+            console.error('Failed to send invitation email, but invitation was created:', emailError);
+        }
+
         res.status(201).json({
             ...invitation,
-            invitationLink: `${process.env.CLIENT_URL || 'http://localhost:3000'}/invite/${token}`,
+            invitationLink,
         });
     } catch (error) {
         console.error('Invite member error:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
 // Accept invitation
 export const acceptInvitation = async (req: Request, res: Response) => {
@@ -157,11 +174,10 @@ export const acceptInvitation = async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'User not found' });
         }
 
-        // TODO: In production, uncomment this to enforce email matching
-        // For development/testing, we allow any logged-in user to accept invitations
-        // if (user.email !== invitation.email) {
-        //     return res.status(403).json({ message: 'This invitation is for a different email address' });
-        // }
+        // Check if the logged-in user matches the invitation email
+        if (user.email !== invitation.email) {
+            return res.status(403).json({ message: 'This invitation is for a different email address. Please log in with the correct account.' });
+        }
 
 
         // Check if already a member

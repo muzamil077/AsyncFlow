@@ -31,7 +31,7 @@ export const TeamCapacityWidget: React.FC<TeamCapacityWidgetProps> = ({ projectI
             const token = localStorage.getItem('token');
 
             // Fetch team members
-            const membersResponse = await fetch(`http://localhost:4000/api/team/project/${projectId}`, {
+            const membersResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/team/project/${projectId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -43,7 +43,7 @@ export const TeamCapacityWidget: React.FC<TeamCapacityWidgetProps> = ({ projectI
                     membersData.map(async (member: TeamMember) => {
                         try {
                             const tasksResponse = await fetch(
-                                `http://localhost:4000/api/tasks?projectId=${projectId}&assigneeId=${member.userId}&status=TODO,IN_PROGRESS`,
+                                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/tasks?projectId=${projectId}&assigneeId=${member.userId}&status=TODO,IN_PROGRESS`,
                                 { headers: { Authorization: `Bearer ${token}` } }
                             );
 

@@ -48,7 +48,7 @@ export default function AcceptInvitationPage() {
                 return;
             }
 
-            const response = await fetch(`http://localhost:4000/api/team/accept/${token}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/team/accept/${token}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${authToken}` },
             });

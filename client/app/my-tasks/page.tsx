@@ -26,7 +26,7 @@ export default function MyTasksPage() {
     const fetchMyTasks = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:4000/api/tasks/my-tasks', {
+            const response = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/tasks/my-tasks', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (response.ok) {

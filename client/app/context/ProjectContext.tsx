@@ -43,7 +43,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         setError(null);
         try {
             console.log('ProjectContext: Fetching from API...');
-            const response = await fetch('http://localhost:4000/api/projects', {
+            const response = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/projects', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (!response.ok) throw new Error('Failed to fetch projects');
@@ -64,7 +64,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch(`http://localhost:4000/api/projects/${id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/projects/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (!response.ok) throw new Error('Failed to fetch project');
@@ -82,7 +82,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('http://localhost:4000/api/projects', {
+            const response = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/projects', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch(`http://localhost:4000/api/projects/${id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/projects/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch(`http://localhost:4000/api/projects/${id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/projects/${id}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });

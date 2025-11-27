@@ -20,7 +20,7 @@ export default function MeetingsPage({ params }: { params: Promise<{ id: string 
     const fetchMeetings = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/meetings/project/${id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/meetings/project/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (response.ok) {
@@ -40,7 +40,7 @@ export default function MeetingsPage({ params }: { params: Promise<{ id: string 
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:4000/api/meetings', {
+            const response = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/meetings', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

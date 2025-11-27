@@ -18,7 +18,7 @@ export const SkillsManager = () => {
     const fetchSkills = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:4000/api/skills', {
+            const response = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/skills', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (response.ok) {
@@ -39,7 +39,7 @@ export const SkillsManager = () => {
         setAdding(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:4000/api/skills', {
+            const response = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/skills', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export const SkillsManager = () => {
     const handleRemoveSkill = async (skillId: string) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/skills/${skillId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/skills/${skillId}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });

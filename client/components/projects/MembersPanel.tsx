@@ -28,7 +28,7 @@ export const MembersPanel: React.FC<MembersPanelProps> = ({ projectId, isOwner, 
     const fetchMembers = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/team/members/${projectId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/team/members/${projectId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (response.ok) {
@@ -45,7 +45,7 @@ export const MembersPanel: React.FC<MembersPanelProps> = ({ projectId, isOwner, 
     const fetchInvitations = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/team/invitations/${projectId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/team/invitations/${projectId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (response.ok) {
@@ -60,7 +60,7 @@ export const MembersPanel: React.FC<MembersPanelProps> = ({ projectId, isOwner, 
     const handleUpdateRole = async (memberId: string, newRole: MemberRole) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/team/members/${memberId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/team/members/${memberId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ export const MembersPanel: React.FC<MembersPanelProps> = ({ projectId, isOwner, 
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/team/members/${memberId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/team/members/${memberId}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -108,7 +108,7 @@ export const MembersPanel: React.FC<MembersPanelProps> = ({ projectId, isOwner, 
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/team/invitations/${invitationId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/team/invitations/${invitationId}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });

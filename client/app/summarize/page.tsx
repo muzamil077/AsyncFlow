@@ -38,7 +38,7 @@ export default function SummarizePage() {
         setLoading(true);
         try {
             const projectId = selectedProjectId || (projects.length > 0 ? projects[0].id : undefined);
-            const response = await axios.post('http://localhost:4000/api/ai/summarize', {
+            const response = await axios.post((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/ai/summarize', {
                 text,
                 projectId
             }, {
@@ -88,7 +88,7 @@ export default function SummarizePage() {
             const token = localStorage.getItem('token');
 
             const taskPromises = insights.actionItems.map(async (actionItem) => {
-                return await axios.post('http://localhost:4000/api/tasks', {
+                return await axios.post((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/tasks', {
                     title: actionItem,
                     description: `Auto-generated from meeting summary`,
                     projectId,

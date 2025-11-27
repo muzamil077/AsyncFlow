@@ -20,7 +20,7 @@ export default function MeetingDetailPage({ params }: { params: Promise<{ id: st
     const fetchMeeting = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/meetings/${meetingId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/meetings/${meetingId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (response.ok) {
@@ -39,7 +39,7 @@ export default function MeetingDetailPage({ params }: { params: Promise<{ id: st
     const handleUpdate = async (meetingId: string, data: any) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/meetings/${meetingId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/meetings/${meetingId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ export default function MeetingDetailPage({ params }: { params: Promise<{ id: st
     const handleDelete = async (meetingId: string) => {
         try {
             const token = localStorage.getItem('token');
-            await fetch(`http://localhost:4000/api/meetings/${meetingId}`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/meetings/${meetingId}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });

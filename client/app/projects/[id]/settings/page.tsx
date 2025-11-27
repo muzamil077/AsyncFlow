@@ -34,7 +34,7 @@ export default function ProjectSettingsPage({ params }: { params: Promise<{ id: 
     const fetchMembers = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/team/project/${id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/team/project/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (response.ok) {
@@ -52,7 +52,7 @@ export default function ProjectSettingsPage({ params }: { params: Promise<{ id: 
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:4000/api/team/invite', {
+            const response = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/team/invite', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -81,7 +81,7 @@ export default function ProjectSettingsPage({ params }: { params: Promise<{ id: 
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/team/${memberId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/team/${memberId}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -175,7 +175,7 @@ export default function ProjectSettingsPage({ params }: { params: Promise<{ id: 
                                     <p className="text-sm text-gray-500">Sync meetings and transcripts</p>
                                 </div>
                             </div>
-                            <Button variant="outline" onClick={() => window.location.href = 'http://localhost:4000/api/integrations/oauth/zoom'}>
+                            <Button variant="outline" onClick={() => window.location.href = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/integrations/oauth/zoom'}>
                                 Connect
                             </Button>
                         </div>
@@ -190,7 +190,7 @@ export default function ProjectSettingsPage({ params }: { params: Promise<{ id: 
                                     <p className="text-sm text-gray-500">Import calendar events</p>
                                 </div>
                             </div>
-                            <Button variant="outline" onClick={() => window.location.href = 'http://localhost:4000/api/integrations/oauth/google'}>
+                            <Button variant="outline" onClick={() => window.location.href = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/integrations/oauth/google'}>
                                 Connect
                             </Button>
                         </div>
@@ -205,7 +205,7 @@ export default function ProjectSettingsPage({ params }: { params: Promise<{ id: 
                                     <p className="text-sm text-gray-500">Sync calls and chats</p>
                                 </div>
                             </div>
-                            <Button variant="outline" onClick={() => window.location.href = 'http://localhost:4000/api/integrations/oauth/microsoft'}>
+                            <Button variant="outline" onClick={() => window.location.href = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/integrations/oauth/microsoft'}>
                                 Connect
                             </Button>
                         </div>

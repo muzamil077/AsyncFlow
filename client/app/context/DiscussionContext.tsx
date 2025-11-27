@@ -29,7 +29,7 @@ export const DiscussionProvider = ({ children }: { children: ReactNode }) => {
         if (!token) return;
         setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:4000/api/discussions/project/${projectId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/discussions/project/${projectId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (!response.ok) throw new Error('Failed to fetch discussions');
@@ -46,7 +46,7 @@ export const DiscussionProvider = ({ children }: { children: ReactNode }) => {
         if (!token) return;
         setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:4000/api/discussions/${id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/discussions/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (!response.ok) throw new Error('Failed to fetch discussion');
@@ -63,7 +63,7 @@ export const DiscussionProvider = ({ children }: { children: ReactNode }) => {
         if (!token) return;
         setIsLoading(true);
         try {
-            const response = await fetch('http://localhost:4000/api/discussions', {
+            const response = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/discussions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ export const DiscussionProvider = ({ children }: { children: ReactNode }) => {
         if (!token) return;
         setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:4000/api/discussions/${discussionId}/posts`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/discussions/${discussionId}/posts`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ export const DiscussionProvider = ({ children }: { children: ReactNode }) => {
         if (!token) throw new Error('Unauthorized');
         setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:4000/api/discussions/${discussionId}/analyze`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/discussions/${discussionId}/analyze`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
             });

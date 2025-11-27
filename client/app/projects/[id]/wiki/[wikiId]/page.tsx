@@ -22,7 +22,7 @@ export default function WikiDetailPage({ params }: { params: Promise<{ id: strin
     const fetchPage = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/wiki/${wikiId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/wiki/${wikiId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (response.ok) {
@@ -42,8 +42,8 @@ export default function WikiDetailPage({ params }: { params: Promise<{ id: strin
         try {
             const token = localStorage.getItem('token');
             const url = wikiId === 'new'
-                ? 'http://localhost:4000/api/wiki'
-                : `http://localhost:4000/api/wiki/${wikiId}`;
+                ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/wiki'
+                : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/wiki/${wikiId}`;
 
             const method = wikiId === 'new' ? 'POST' : 'PUT';
 

@@ -80,7 +80,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     const fetchProjectMembers = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/members/project/${projectId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/members/project/${projectId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (response.ok) {
@@ -100,7 +100,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         setLoadingSuggestions(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:4000/api/assignments/suggest', {
+            const response = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/assignments/suggest', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -22,7 +22,7 @@ function LoginForm() {
         setIsLoading(true);
 
         try {
-            const res = await fetch('http://localhost:4000/api/auth/login', {
+            const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),

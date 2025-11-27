@@ -20,7 +20,7 @@ export default function WikiPage({ params }: { params: Promise<{ id: string }> }
     const fetchPages = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:4000/api/wiki/project/${id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/wiki/project/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (response.ok) {
@@ -41,7 +41,7 @@ export default function WikiPage({ params }: { params: Promise<{ id: string }> }
     const handleRegenerate = async () => {
         try {
             const token = localStorage.getItem('token');
-            await fetch('http://localhost:4000/api/wiki/regenerate', {
+            await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000') + '/api/wiki/regenerate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

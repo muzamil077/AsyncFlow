@@ -10,11 +10,7 @@ import {
 
 const router = express.Router();
 console.log('Project routes loaded.');
-
-
-
 router.use(authenticate);
-
 router.post('/', createProject);
 router.get('/', getProjects);
 router.get('/:id', getProject);

@@ -34,20 +34,27 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     const [error, setError] = useState<string | null>(null);
 
     const fetchProjects = async () => {
-        if (!token) return;
+        console.log('ProjectContext: fetchProjects called', { token: !!token });
+        if (!token) {
+            console.log('ProjectContext: No token, skipping fetch');
+            return;
+        }
         setIsLoading(true);
         setError(null);
         try {
+            console.log('ProjectContext: Fetching from API...');
             const response = await fetch('http://localhost:4000/api/projects', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (!response.ok) throw new Error('Failed to fetch projects');
             const data = await response.json();
-            console.log('fetchProjects response:', data);
+            console.log('ProjectContext: fetchProjects success', data);
             setProjects(data);
         } catch (err: any) {
+            console.error('ProjectContext: fetchProjects error', err);
             setError(err.message);
         } finally {
+            console.log('ProjectContext: fetchProjects finished');
             setIsLoading(false);
         }
     };

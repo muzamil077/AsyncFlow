@@ -16,6 +16,10 @@ model User {
   email         String    @unique
   password      String
   name          String?
+  jobTitle      String?
+  company       String?
+  phoneNumber   String?
+  bio           String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   projects      Project[]
@@ -27,6 +31,8 @@ model User {
   projectMemberships ProjectMember[]
   sentInvitations ProjectInvitation[] @relation("InvitationSender")
   skills        UserSkill[]
+  resetPasswordToken   String?   @unique
+  resetPasswordExpires DateTime?
 }
 
 model Project {

@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useProject } from '../context/ProjectContext';
+import { useTask } from '../context/TaskContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, CheckSquare, FileText, List, ArrowRight } from 'lucide-react';
+import { Loader2, FileText, List, CheckSquare, ArrowRight } from 'lucide-react';
 import axios from 'axios';
-import { TaskModal } from '@/components/tasks/TaskModal';
-import { useTask } from '@/app/context/TaskContext';
 import { CreateTaskData, UpdateTaskData } from '@/types/task';
-import { useProject } from '@/app/context/ProjectContext';
+import { TaskModal } from '@/components/tasks/TaskModal';
 
 interface MeetingInsights {
     summary: string;
@@ -29,13 +29,6 @@ export default function SummarizePage() {
     const [showBulkPreview, setShowBulkPreview] = useState(false);
     const [creatingBulkTasks, setCreatingBulkTasks] = useState(false);
 
-    // We need a project context to create tasks. 
-    // For now, we'll try to use the first available project or ask user to select one.
-    // To simplify, let's assume we are in a global context or just pick the current one if available.
-    // But wait, this page is global. We might need a project selector.
-    // For this iteration, let's fetch projects and default to the first one, or handle it in the modal if possible.
-    // The TaskModal requires a projectId.
-
     const { projects } = useProject();
     const { createTask } = useTask();
     const [selectedProjectId, setSelectedProjectId] = useState<string>('');
@@ -44,26 +37,18 @@ export default function SummarizePage() {
         if (!text) return;
         setLoading(true);
         try {
-            // Pass the first project ID if available to link the meeting
             const projectId = selectedProjectId || (projects.length > 0 ? projects[0].id : undefined);
             const response = await axios.post('http://localhost:4000/api/ai/summarize', {
                 text,
                 projectId
             }, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}` // Assuming token is in localStorage
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
             setInsights(response.data);
         } catch (error) {
             console.error('Error summarizing text:', error);
-            // Fallback for demo if API fails or auth missing
-            // setInsights({
-            //     summary: 'Failed to generate summary.',
-            //     actionItems: [],
-            //     decisions: [],
-            //     discussionPoints: []
-            // });
         } finally {
             setLoading(false);
         }
@@ -102,7 +87,6 @@ export default function SummarizePage() {
             const projectId = selectedProjectId || projects[0].id;
             const token = localStorage.getItem('token');
 
-            // Create all tasks from action items
             const taskPromises = insights.actionItems.map(async (actionItem) => {
                 return await axios.post('http://localhost:4000/api/tasks', {
                     title: actionItem,
@@ -208,13 +192,13 @@ export default function SummarizePage() {
                                         <CheckSquare className="w-5 h-5" />
                                         Action Items
                                     </CardTitle>
-                                    {insights?.actionItems?.length > 0 && selectedProjectId && (
+                                    {(insights?.actionItems?.length ?? 0) > 0 && selectedProjectId && (
                                         <Button
                                             size="sm"
                                             onClick={() => setShowBulkPreview(true)}
                                             className="bg-blue-600 hover:bg-blue-700"
                                         >
-                                            Create All Tasks ({insights.actionItems.length})
+                                            Create All Tasks ({insights?.actionItems?.length ?? 0})
                                         </Button>
                                     )}
                                 </div>

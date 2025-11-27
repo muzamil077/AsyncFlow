@@ -42,6 +42,14 @@ const member_routes_1 = __importDefault(require("./routes/member.routes"));
 app.use('/api/team', member_routes_1.default);
 const assignment_routes_1 = __importDefault(require("./routes/assignment.routes"));
 app.use('/api/assignments', assignment_routes_1.default);
+const skills_routes_1 = __importDefault(require("./routes/skills.routes"));
+app.use('/api/skills', skills_routes_1.default);
+const meeting_routes_1 = __importDefault(require("./routes/meeting.routes"));
+app.use('/api/meetings', meeting_routes_1.default);
+const integration_routes_1 = __importDefault(require("./routes/integration.routes"));
+app.use('/api/integrations', integration_routes_1.default);
+const wiki_routes_1 = __importDefault(require("./routes/wiki.routes"));
+app.use('/api/wiki', wiki_routes_1.default);
 // Global error handling middleware
 app.use((err, req, res, next) => {
     console.error('Unhandled error:', err);

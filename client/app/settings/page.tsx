@@ -6,6 +6,14 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 
 export default function SettingsPage() {
+    return (
+        <React.Suspense fallback={<div>Loading...</div>}>
+            <SettingsContent />
+        </React.Suspense>
+    );
+}
+
+function SettingsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [status, setStatus] = useState<string | null>(null);
@@ -27,8 +35,8 @@ export default function SettingsPage() {
                 {/* OAuth Callback Status */}
                 {status && (
                     <div className={`p-6 rounded-lg mb-6 ${status === 'success'
-                            ? 'bg-green-50 border-2 border-green-500'
-                            : 'bg-red-50 border-2 border-red-500'
+                        ? 'bg-green-50 border-2 border-green-500'
+                        : 'bg-red-50 border-2 border-red-500'
                         }`}>
                         <div className="flex items-center space-x-3 mb-4">
                             {status === 'success' ? (

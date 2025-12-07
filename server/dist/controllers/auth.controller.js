@@ -34,7 +34,7 @@ const register = async (req, res) => {
                 bio
             },
         });
-        const token = jsonwebtoken_1.default.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jsonwebtoken_1.default.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
         res.status(201).json({ token, user: { id: user.id, email: user.email, name: user.name } });
     }
     catch (error) {
@@ -59,7 +59,7 @@ const login = async (req, res) => {
         if (!isPasswordValid) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
-        const token = jsonwebtoken_1.default.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jsonwebtoken_1.default.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
         res.status(200).json({ token, user: { id: user.id, email: user.email, name: user.name } });
     }
     catch (error) {
@@ -83,7 +83,8 @@ const forgotPassword = async (req, res) => {
         }
         // Generate reset token
         const resetToken = crypto_1.default.randomBytes(32).toString('hex');
-        const resetTokenHash = await bcryptjs_1.default.hash(resetToken, 10); // Hash token before storing? Or just store plain?
+        // No need to hash the token for now; store plain token
+        // const resetTokenHash = await bcrypt.hash(resetToken, 10); // removed unused variable
         // Actually, usually we store hashed token or just the token if it's random enough.
         // Let's store the token directly but it should be unique.
         // Wait, schema says unique.
@@ -99,6 +100,10 @@ const forgotPassword = async (req, res) => {
                 resetPasswordExpires,
             },
         });
+        if (!process.env.CLIENT_URL) {
+            console.error('CLIENT_URL is not set in environment');
+            return res.status(500).json({ message: 'Server configuration error' });
+        }
         const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
         await (0, email_service_1.sendPasswordResetEmail)({
             to: user.email,

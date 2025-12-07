@@ -37,7 +37,7 @@ export const register = async (req: Request, res: Response) => {
             },
         });
 
-        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
 
         res.status(201).json({ token, user: { id: user.id, email: user.email, name: user.name } });
     } catch (error) {
@@ -68,7 +68,7 @@ export const login = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
 
         res.status(200).json({ token, user: { id: user.id, email: user.email, name: user.name } });
     } catch (error) {

@@ -46,6 +46,7 @@ const getAuthRedirect = (provider) => {
         params.access_type = 'offline';
         params.prompt = 'consent';
     }
+    console.log(`[OAuth] Generating URL for ${provider}. ClientID: ${cfg.clientId}, RedirectURI: ${cfg.redirectUri}`);
     return `${cfg.authUrl}?${querystring_1.default.stringify(params)}`;
 };
 exports.getAuthRedirect = getAuthRedirect;

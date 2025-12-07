@@ -61,18 +61,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <h1 className="text-lg font-bold">AsyncFlow</h1>
             </header>
             {/* Sidebar for md+ */}
-            <aside className="hidden md:block w-72 m-4 bg-white rounded-[40px] flex flex-col shadow-sm h-[calc(100vh-2rem)] fixed left-0 top-0 z-50 overflow-hidden">
+            <aside className="hidden md:block w-72 bg-white flex flex-col shadow-sm h-[calc(100vh-2rem)] fixed bottom-0 left-0 top-0 z-50 overflow-hidden">
                 {/* Header */}
-                <div className="px-8 pt-8 pb-6">
+                <div className="px-8 pt-8">
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                                 <LayoutDashboard className="w-5 h-5 text-white" />
                             </div>
-                            <span className="font-bold text-lg text-gray-800">AsyncFlow <span className="text-gray-400 text-xs font-normal">v1.0</span></span>
+                            <span className="font-bold text-lg text-gray-800">AsyncFlow </span>
                         </div>
                     </div>
                 </div>
+
+
 
                 {/* Navigation */}
                 <div className="flex-1 overflow-y-auto px-6 scrollbar-hide">
@@ -93,32 +95,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             <CheckSquare className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
                             <span className="font-medium">My Tasks</span>
                         </Link>
-                        <Link href="/calendar" className="flex items-center px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all group">
-                            <Calendar className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
-                            <span className="font-medium">Calendar</span>
-                        </Link>
-                        <Link href="/team" className="flex items-center px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all group">
-                            <Users className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
-                            <span className="font-medium">Contacts</span>
-                        </Link>
+
                     </div>
 
                     <div className="space-y-1">
-                        <p className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Account</p>
-                        <button className="w-full flex items-center justify-between px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all group">
-                            <div className="flex items-center">
-                                <Bell className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
-                                <span className="font-medium">Notifications</span>
-                            </div>
-                            <span className="bg-[#C4F0C4] text-[#2E7D32] text-xs font-bold px-2 py-1 rounded-lg">24</span>
-                        </button>
-                        <button className="w-full flex items-center justify-between px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all group">
-                            <div className="flex items-center">
-                                <MessageSquare className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
-                                <span className="font-medium">Chat</span>
-                            </div>
-                            <span className="bg-[#FFE0B2] text-[#EF6C00] text-xs font-bold px-2 py-1 rounded-lg">8</span>
-                        </button>
+
                         <Link href="/setting" className="flex items-center px-4 py-3 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all group">
                             <Settings className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
                             <span className="font-medium">Settings</span>
@@ -127,20 +108,22 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
 
                 {/* User Profile */}
-                <div className="p-6 mt-auto">
-                    <div className="bg-gray-50 p-3 rounded-[20px] flex items-center justify-between border border-gray-100">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-400 to-red-500 flex items-center justify-center text-white font-bold shadow-md">
-                                {user?.name ? user.name[0].toUpperCase() : 'U'}
+                <div className="fixed bottom-10 left-5">
+                    <div className="mt-auto">
+                        <div className="bg-gray-50 p-3 rounded-[20px] flex items-center justify-between border border-gray-100">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-400 to-red-500 flex items-center justify-center text-white font-bold shadow-md">
+                                    {user?.name ? user.name[0].toUpperCase() : 'U'}
+                                </div>
+                                <div className="overflow-hidden">
+                                    <p className="text-sm font-bold text-gray-800 truncate max-w-[100px]">{user?.name || 'User'}</p>
+                                    <p className="text-xs text-gray-400 truncate max-w-[100px]">{user?.email}</p>
+                                </div>
                             </div>
-                            <div className="overflow-hidden">
-                                <p className="text-sm font-bold text-gray-800 truncate max-w-[100px]">{user?.name || 'User'}</p>
-                                <p className="text-xs text-gray-400 truncate max-w-[100px]">{user?.email}</p>
-                            </div>
+                            <button onClick={logout} className="text-gray-400 cursor-pointer hover:text-red-500 transition-colors p-2">
+                                <LogOut className="w-5 h-5" />
+                            </button>
                         </div>
-                        <button onClick={logout} className="text-gray-400 hover:text-red-500 transition-colors p-2">
-                            <LogOut className="w-5 h-5" />
-                        </button>
                     </div>
                 </div>
             </aside>

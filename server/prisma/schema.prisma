@@ -33,6 +33,10 @@ model User {
   skills        UserSkill[]
   resetPasswordToken   String?   @unique
   resetPasswordExpires DateTime?
+  googleAccessToken    String?
+  googleRefreshToken   String?
+  zoomAccessToken      String?
+  zoomRefreshToken     String?
 }
 
 model Project {

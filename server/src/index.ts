@@ -1,10 +1,15 @@
+import 'dotenv/config'; // Load env vars before anything else
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { summarize } from './controllers/aiController';
 import { authenticate } from './middleware/auth.middleware';
 
-dotenv.config();
+console.log('[Debug] CWD:', process.cwd());
+console.log('[Debug] GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID);
+import fs from 'fs';
+console.log('[Debug] .env exists?', fs.existsSync('.env'));
+
+
 
 const app = express();
 const port = process.env.PORT || 4000;
